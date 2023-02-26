@@ -65,7 +65,7 @@ impl BlockIterator {
     //based on offset
     fn seek_to_offset(&mut self, off: usize) {
         let mut entry = &self.block.data[off..];
-        let key_len = entry.get_u16() as usize;
+        let key_len = entry.get_u16() as usize;//get 之后会自动前进2bytes
         let key = entry[..key_len].to_vec();
         entry.advance(key_len);
         self.key.clear();
