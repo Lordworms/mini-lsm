@@ -5,8 +5,9 @@ use std::path::Path;
 use std::sync::Arc;
 
 use anyhow::Result;
+use bytes::BufMut;
 
-use super::{BlockMeta, SsTable};
+use super::{BlockMeta, FileObject, SsTable};
 use crate::{
     block::{self, BlockBuilder},
     lsm_storage::BlockCache,
@@ -44,7 +45,7 @@ impl SsTableBuilder {
             first_key: (std::mem::take(&mut self.first_key).into()),
         });
         //extend the original data
-        self.data.extend(old_encode_block);
+        self.data.extend(old_encode_block); //data contains blocks
     }
     /// Adds a key-value pair to SSTable
     pub fn add(&mut self, key: &[u8], value: &[u8]) {
@@ -55,23 +56,36 @@ impl SsTableBuilder {
             return;
         }
         self.add_block();
+        assert!(self.block_builder.add(key, value));
         self.first_key = key.to_vec();
     }
 
     /// Get the estimated size of the SSTable.
     pub fn estimated_size(&self) -> usize {
-        unimplemented!()
+        self.data.len()
     }
 
     /// Builds the SSTable and writes it to the given path. No need to actually write to disk until
     /// chapter 4 block cache.
     pub fn build(
-        self,
+        mut self,
         id: usize,
         block_cache: Option<Arc<BlockCache>>,
         path: impl AsRef<Path>,
     ) -> Result<SsTable> {
-        unimplemented!()
+        self.add_block();
+        let mut buf: Vec<u8> = self.data;
+        let meta_off = buf.len();
+        BlockMeta::encode_block_meta(&self.meta, &mut buf);
+        buf.put_u32(meta_off as u32);
+        let file = FileObject::create(path.as_ref(), buf)?;
+        Ok(SsTable {
+            id,
+            file: (file),
+            block_metas: (self.meta),
+            block_meta_offset: (meta_off),
+            block_cache,
+        })
     }
 
     #[cfg(test)]

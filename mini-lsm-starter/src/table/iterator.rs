@@ -6,15 +6,29 @@ use std::sync::Arc;
 use anyhow::Result;
 
 use super::SsTable;
-use crate::iterators::StorageIterator;
+use crate::{
+    block::{Block, BlockIterator},
+    iterators::StorageIterator,
+};
 
 /// An iterator over the contents of an SSTable.
-pub struct SsTableIterator {}
+pub struct SsTableIterator {
+    table: Arc<SsTable>,
+    block_id: usize,
+    block_iter: BlockIterator,
+}
 
 impl SsTableIterator {
+    pub fn seek_to_first(&self, table: Arc<SsTable>) {
+        unimplemented!()
+    }
     /// Create a new iterator and seek to the first key-value pair.
     pub fn create_and_seek_to_first(table: Arc<SsTable>) -> Result<Self> {
-        unimplemented!()
+        Ok(SsTableIterator {
+            table: (table),
+            block_id: (0),
+            block_iter: (BlockIterator::create_and_seek_to_first(block)),
+        })
     }
 
     /// Seek to the first key-value pair.
