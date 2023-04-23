@@ -8,7 +8,7 @@ use std::fs::File;
 use std::path::Path;
 use std::sync::Arc;
 
-use anyhow::{Ok, Result,anyhow};
+use anyhow::{anyhow, Ok, Result};
 pub use builder::SsTableBuilder;
 use bytes::{Buf, BufMut, Bytes};
 pub use iterator::SsTableIterator;
@@ -146,13 +146,12 @@ impl SsTable {
 
     /// Read a block from disk, with block cache. (Day 4)
     pub fn read_block_cached(&self, block_idx: usize) -> Result<Arc<Block>> {
-        if let Some(ref cache)=self.block_cache{
+        if let Some(ref cache) = self.block_cache {
             let blk = cache
-            .try_get_with((self.id, block_idx), || self.read_block(block_idx))
-            .map_err(|e| anyhow!("{}", e))?;
+                .try_get_with((self.id, block_idx), || self.read_block(block_idx))
+                .map_err(|e| anyhow!("{}", e))?;
             Ok(blk)
-        }
-        else {
+        } else {
             self.read_block(block_idx)
         }
     }

@@ -24,7 +24,6 @@ impl Block {
         buf.put_u16(offsets_len as u16);
         buf.into()
     }
-
     pub fn decode(data: &[u8]) -> Self {
         let entry_offsets_len = (&data[data.len() - SIZEOF_U16..]).get_u16() as usize;
         let data_end = data.len() - SIZEOF_U16 - entry_offsets_len * SIZEOF_U16;
